@@ -106,8 +106,8 @@ label start:
     "Олег бежит."
     "Стук в дверь. А я почти голая, быстро одеваюсь, и лечу."
     "Открываю! А там Егорыч:"
-    show e with dissolve at left
-    show E with dissolve at right
+    show e  at left with dissolve
+    show E  at right with dissolve
     E "Дамочка, добрый день! Курите на лесенках?"
     "Вообще-то я не курю, но хватает вредных привычек и увлечений."
     e "Я не курю."
