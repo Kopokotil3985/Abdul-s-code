@@ -10,6 +10,8 @@ define E = Character('Олег Егорьевич', color="#205d86")
 define B = Character('Дядя Боря', color="#303b7c")
 define K = Character('Кирилловна', color="#dac23a")
 
+init:
+    $ left2 = Position(xalign=0.2, yalign=1.1)
 
 label start:
     scene tramvai with fade
@@ -69,6 +71,8 @@ label start:
     "Василиса пошла отдохнуть."
     "Идёт дядя Боря, пьяница и бездельник, на что живёт?"
     "Только Бог знает."
+    show E at left with dissolve
+    show B at right with dissolve
     B "Привет, Егорыч!"
     E "Привет, Борька!"
     B "Ой, а не найдется ли пятачок в долг?"
@@ -80,6 +84,7 @@ label start:
     B "А ты знаешь, что сегодня за праздник?"
     E "Нет"
     B "Сегодня день Ивана Купалы! Поставишь по 50 грамм?"
+    show K at left2 with dissolve
     "Кирилловна вышла и, увидев Борю , закричала:"
     K "Ты то что пришел? А ну марш отсюда!"
     B "Ты что, Василисушка, так гостей не гоже принимать, лучше налей нам по 100 грамм!"
@@ -106,8 +111,8 @@ label start:
     "Олег бежит."
     "Стук в дверь. А я почти голая, быстро одеваюсь, и лечу."
     "Открываю! А там Егорыч:"
-    show e  at left with dissolve
-    show E  at right with dissolve
+    show e at left with dissolve
+    show E at right with dissolve
     E "Дамочка, добрый день! Курите на лесенках?"
     "Вообще-то я не курю, но хватает вредных привычек и увлечений."
     e "Я не курю."
