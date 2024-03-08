@@ -304,15 +304,15 @@ screen navigation():
         spacing 25
         xoffset -25
 
-        textbutton _("Save") action ShowMenu("save")
-        textbutton _("Load") action ShowMenu("load")
-        textbutton _("Options") action ShowMenu("preferences")
-        textbutton _("History") action ShowMenu("history")
-        textbutton _("About") action ShowMenu("about")
-        textbutton _("Help") action ShowMenu("help")
-        textbutton _("Quit") action Show("confirmbutton")
+        textbutton _("Сохранить") action ShowMenu("save")
+        textbutton _("Загрузить") action ShowMenu("load")
+        textbutton _("Настройки") action ShowMenu("preferences")
+        textbutton _("История") action ShowMenu("history")
+        textbutton _("Об игре") action ShowMenu("about")
+        textbutton _("Помощь") action ShowMenu("help")
+        textbutton _("Выход") action Show("confirmbutton")
 
-    textbutton _("Return") action Return() xalign 0.95 yalign 0.93
+    textbutton _("Вернуться") action Return() xalign 0.95 yalign 0.93
 
 
 style navigation_button
@@ -347,12 +347,12 @@ screen main_menu():
     vbox:
         xpos 280
         ypos 330
-        textbutton _("Start") action Start() at button1
-        textbutton _("Load") action ShowMenu("load") at button2
-        textbutton _("Options") action ShowMenu("preferences")at button3
-        textbutton _("Help") action ShowMenu("help") at button4
-        textbutton _("About") action ShowMenu("about") at button5
-        textbutton _("Quit") action Quit(confirm=not main_menu) at button6
+        textbutton _("Начать") action Start() at button1
+        textbutton _("Загрузить") action ShowMenu("load") at button2
+        textbutton _("Настройки") action ShowMenu("preferences")at button3
+        textbutton _("Помощь") action ShowMenu("help") at button4
+        textbutton _("Об игре") action ShowMenu("about") at button5
+        textbutton _("Выход") action Quit(confirm=not main_menu) at button6
 
     add "gui/overlay/main_menu_logo.png"
 
@@ -612,7 +612,7 @@ screen file_slots(title):
 
                         add FileScreenshot(slot) xalign 0.5
 
-                        text FileTime(slot, format=_("{#file_time}%A, %B %d %Y, %H:%M"), empty=_("empty slot")):
+                        text FileTime(slot, format=_("{#file_time}%A, %B %d %Y, %H:%M"), empty=_("Пустой слот")):
                             style "slot_time_text"
                             yoffset 20
                         text FileSaveName(slot):
@@ -693,10 +693,10 @@ screen preferences():
         hotbar (264, 785, 499, 42) value Preference('auto-forward time')
 
         ##BAR LABELS
-        text _("Music") xpos 264 ypos 411
-        text _("Sound") xpos 264 ypos 521
-        text _("Text speed") xpos 264 ypos 631
-        text _("Auto-forward") xpos 264 ypos 741
+        text _("Музыка") xpos 264 ypos 411
+        text _("Звуки") xpos 264 ypos 521
+        text _("Скорость текста") xpos 264 ypos 631
+        text _("Автоматическая перемотка вперед") xpos 264 ypos 741
 
 
     imagemap:
@@ -709,9 +709,9 @@ screen preferences():
         hotspot (1087, 415, 584, 65) action If(preferences.fullscreen==False, Preference('display', 'fullscreen'), Preference('display', 'window'))
         ##Display labels
         if preferences.fullscreen == False:
-            label _("Window") xpos 1290 ypos 410
+            label _("В окне") xpos 1290 ypos 410
         else:
-            label _("Fullscreen") xpos 1280 ypos 410
+            label _("На весь экран") xpos 1210 ypos 410
 
         ##Rollback button
         hotspot (1087, 548, 584, 65):
@@ -724,24 +724,22 @@ screen preferences():
 
         ##Rollback labels
         if preferences.desktop_rollback_side == "disable":
-            label _("Disabled") xpos 1290 ypos 542
+            label _("Отключено") xpos 1250 ypos 542
         elif preferences.desktop_rollback_side == "left":
-            label _("Left") xpos 1345 ypos 542
+            label _("Влево") xpos 1300 ypos 542
         else:
-            label _("Right") xpos 1330 ypos 542
+            label _("Вправо") xpos 1300 ypos 542
 
-        text _("Display") xpos 1087 ypos 375
-        text _("Rollback") xpos 1087 ypos 508
+        text _("Режим") xpos 1087 ypos 375
+        text _("Отмена") xpos 1087 ypos 508
 
     vbox:
         xsize 500
         xpos 1170
         ypos 650
         style_prefix "check"
-        textbutton _("Skip Unseen Text") action Preference("skip", "toggle") xalign 1.0
-        textbutton _("Skip After Choices") action Preference("after choices", "toggle") xalign 1.0
-        textbutton _("Skip Transitions") action InvertSelected(Preference("transitions", "toggle")) xalign 1.0
-
+        textbutton _("Пропускать непрочитанное") action Preference("skip", "toggle") xalign 1.0
+        textbutton _("Пропускать после выборов") action Preference("after choices", "toggle") xalign 1.385
 
 style pref_label is gui_label
 style pref_label_text is gui_label_text
@@ -945,47 +943,43 @@ screen help():
         vbox:
             vbox:
                 label _("Enter")
-                text _("Advances dialogue and activates the interface.")
+                text _("Расширяет диалог и активирует интерфейс.")
 
             vbox:
                 label _("Space")
-                text _("Advances dialogue without selecting choices.")
+                text _("Продвигает диалог, не выбирая вариантов.")
 
             vbox:
-                label _("Arrow Keys")
-                text _("Navigate the interface.")
+                label _("Стрелки")
+                text _("Перемещает по интерфейсу.")
 
             vbox:
                 label _("Escape")
-                text _("Accesses the game menu.")
+                text _("Открывает доступ к игровому меню.")
 
             vbox:
                 label _("Ctrl")
-                text _("Skips dialogue while held down.")
+                text _("Пропускает диалог, удерживая нажатой клавишу.")
 
             vbox:
                 label _("Tab")
-                text _("Toggles dialogue skipping.")
+                text _("Переключает пропуск диалога.")
 
             vbox:
                 label _("Page Up")
-                text _("Rolls back to earlier dialogue.")
+                text _("Откат к предыдущему диалогу.")
 
             vbox:
                 label _("Page Down")
-                text _("Rolls forward to later dialogue.")
+                text _("Переходит к более позднему диалогу.")
 
             vbox:
                 label "H"
-                text _("Hides the user interface.")
+                text _("Прячет интерфейс.")
 
             vbox:
                 label "S"
-                text _("Takes a screenshot.")
-
-            vbox:
-                label "V"
-                text _("Toggles assistive {a=https://www.renpy.org/l/voicing}self-voicing{/a}.")
+                text _("Делает скриншот.")
 
     viewport:
         xpos 1121
@@ -998,24 +992,24 @@ screen help():
         mousewheel True
         vbox:
             vbox:
-                label _("Left Click")
-                text _("Advances dialogue and activates the interface.")
+                label _("ЛКМ")
+                text _("Расширяет диалог и активирует интерфейс.")
 
             vbox:
-                label _("Middle Click")
-                text _("Hides the user interface.")
+                label _("СКМ")
+                text _("Прячет интерфейс.")
 
             vbox:
-                label _("Right Click")
-                text _("Accesses the game menu.")
+                label _("ПКМ")
+                text _("Открывает доступ к игровому меню.")
 
             vbox:
-                label _("Mouse Wheel Up/Click Rollback Side")
-                text _("Rolls back to earlier dialogue.")
+                label _("Колестико вверх")
+                text _("Откат к предыдущему диалогу.")
 
             vbox:
-                label _("Mouse Wheel Down")
-                text _("Rolls forward to later dialogue.")
+                label _("Колесико вниз")
+                text _("Переходит к более позднему диалогу.")
 
 
 
@@ -1079,8 +1073,8 @@ screen confirm(message, yes_action, no_action):
                 xalign 0.5
                 spacing 150
 
-                textbutton _("Yes") action yes_action
-                textbutton _("No") action no_action
+                textbutton _("Да") action yes_action
+                textbutton _("Нет") action no_action
 
     ## Right-click and escape answer "no".
     key "game_menu" action no_action

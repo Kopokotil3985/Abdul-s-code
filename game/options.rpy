@@ -30,9 +30,6 @@ define config.version = "0.1.5"
 ## triple-quotes, and leave a blank line between paragraphs.
 
 define gui.about = _p("""
-Использованные материалы:
-Готовый GUI - Dark Elegance (https://skolaztika.itch.io/dark-elegance-renpy-gui)
-Шрифт - Jost Light
 """)
 
 
