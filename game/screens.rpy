@@ -1,12 +1,12 @@
 ﻿################################################################################
-## Инициализация
+## Initialization
 ################################################################################
 
 init offset = -1
 
 
 ################################################################################
-## Стили
+## Styles
 ################################################################################
 
 style default:
@@ -78,19 +78,20 @@ style frame:
 
 
 ################################################################################
-## Внутриигровые экраны
+## In-game screens
 ################################################################################
 
 
-## Экран разговора #############################################################
+## Say screen ##################################################################
 ##
-## Экран разговора используется для показа диалога игроку. Он использует два
-## параметра — who и what — что, соответственно, имя говорящего персонажа и
-## показываемый текст. (Параметр who может быть None, если имя не задано.)
+## The say screen is used to display dialogue to the player. It takes two
+## parameters, who and what, which are the name of the speaking character and
+## the text to be displayed, respectively. (The who parameter can be None if no
+## name is given.)
 ##
-## Этот экран должен создать текст с id "what", чтобы Ren'Py могла показать
-## текст. Здесь также можно создать наложения с id "who" и id "window", чтобы
-## применить к ним настройки стиля.
+## This screen must create a text displayable with id "what", as Ren'Py uses
+## this to manage text display. It can also create displayables with id "who"
+## and id "window" to apply style properties.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#say
 
@@ -110,14 +111,13 @@ screen say(who, what):
         text what id "what"
 
 
-    ## Если есть боковое изображение ("голова"), показывает её поверх текста.
-    ## По стандарту не показывается на варианте для мобильных устройств — мало
-    ## места.
+    ## If there's a side image, display it above the text. Do not display on the
+    ## phone variant - there's no room.
     if not renpy.variant("small"):
         add SideImage() xalign 0.0 yalign 1.0
 
 
-## Делает namebox доступным для стилизации через объект Character.
+## Make the namebox available for styling through the Character object.
 init python:
     config.character_id_prefixes.append('namebox')
 
@@ -139,10 +139,10 @@ style window:
     background Image("gui/textbox.png", xalign=0.5, yalign=1.0)
 
 style namebox:
-    xpos gui.name_xpos
+    xpos gui.name_xpos - 250
     xanchor gui.name_xalign
-    xsize gui.namebox_width
-    ypos gui.name_ypos
+    xsize gui.namebox_width - 30
+    ypos gui.name_ypos  + 15
     ysize gui.namebox_height
 
     background Frame("gui/namebox.png", gui.namebox_borders, tile=gui.namebox_tile, xalign=gui.name_xalign)
@@ -150,7 +150,7 @@ style namebox:
 
 style say_label:
     properties gui.text_properties("name", accent=True)
-    xalign gui.name_xalign
+    xalign 1.0
     yalign 0.5
 
 style say_dialogue:
@@ -158,17 +158,16 @@ style say_dialogue:
 
     xpos gui.dialogue_xpos
     xsize gui.dialogue_width
-    ypos gui.dialogue_ypos
+    ypos gui.dialogue_ypos - 17
 
-    adjust_spacing False
 
-## Экран ввода #################################################################
+## Input screen ################################################################
 ##
-## Этот экран используется, чтобы показывать renpy.input. Это параметр запроса,
-## используемый для того, чтобы дать игроку ввести в него текст.
+## This screen is used to display renpy.input. The prompt parameter is used to
+## pass a text prompt in.
 ##
-## Этот экран должен создать наложение ввода с id "input", чтобы принять
-## различные вводимые параметры.
+## This screen must create an input displayable with id "input" to accept the
+## various input parameters.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#input
 
@@ -178,7 +177,7 @@ screen input(prompt):
     window:
 
         vbox:
-            xanchor gui.dialogue_text_xalign
+            xalign gui.dialogue_text_xalign
             xpos gui.dialogue_xpos
             xsize gui.dialogue_width
             ypos gui.dialogue_ypos
@@ -197,11 +196,11 @@ style input:
     xmaximum gui.dialogue_width
 
 
-## Экран выбора ################################################################
+## Choice screen ###############################################################
 ##
-## Этот экран используется, чтобы показывать внутриигровые выборы,
-## представленные оператором menu. Один параметр, вложения, список объектов,
-## каждый с заголовком и полями действия.
+## This screen is used to display the in-game choices presented by the menu
+## statement. The one parameter, items, is a list of objects, each with caption
+## and action fields.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#choice
 
@@ -211,6 +210,11 @@ screen choice(items):
     vbox:
         for i in items:
             textbutton i.caption action i.action
+
+
+## When this is true, menu captions will be spoken by the narrator. When false,
+## menu captions will be displayed as empty buttons.
+define config.narrator_menu = True
 
 
 style choice_vbox is vbox
@@ -231,36 +235,42 @@ style choice_button_text is default:
     properties gui.button_text_properties("choice_button")
 
 
-## Экран быстрого меню #########################################################
+## Quick Menu screen ###########################################################
 ##
-## Быстрое меню показывается внутри игры, чтобы обеспечить лёгкий доступ к
-## внеигровым меню.
+## The quick menu is displayed in-game to provide easy access to the out-of-game
+## menus.
 
 screen quick_menu():
 
-    ## Гарантирует, что оно появляется поверх других экранов.
+    ## Ensure this appears on top of other screens.
     zorder 100
 
-    if quick_menu:
+    if quick_menu and not renpy.get_screen('choice'):
 
         hbox:
             style_prefix "quick"
 
             xalign 0.5
             yalign 1.0
+            imagemap:
+                ground "gui/textbox_ground.png"
+                idle "gui/textbox_ground.png"
+                hover "gui/textbox_hover.png"
+                selected_hover "gui/textbox_selected_hover.png"
+                selected_idle "gui/textbox_hover.png"
 
-            textbutton _("Назад") action Rollback()
-            textbutton _("История") action ShowMenu('history')
-            textbutton _("Пропуск") action Skip() alternate Skip(fast=True, confirm=True)
-            textbutton _("Авто") action Preference("auto-forward", "toggle")
-            textbutton _("Сохранить") action ShowMenu('save')
-            textbutton _("Б.Сохр") action QuickSave()
-            textbutton _("Б.Загр") action QuickLoad()
-            textbutton _("Опции") action ShowMenu('preferences')
+                hotspot (1307, 282, 52, 52) action Skip() alternate Skip(fast=True, confirm=True)
+                hotspot (1392, 282, 52, 52) action Preference("auto-forward", "toggle")
+                hotspot (1475, 282, 52, 52) action Rollback()
+
+                hotspot (517, 282, 52, 52) action ShowMenu('history')
+                hotspot (355, 282, 52, 52) action ShowMenu('save')
+                hotspot (435, 282, 52, 52) action ShowMenu('load')
+                hotspot (597, 282, 52, 52) action ShowMenu('preferences')
 
 
-## Данный код гарантирует, что экран быстрого меню будет показан в игре в любое
-## время, если только игрок не скроет интерфейс.
+## This code ensures that the quick_menu screen is displayed in-game, whenever
+## the player has not explicitly hidden the interface.
 init python:
     config.overlay_screens.append("quick_menu")
 
@@ -275,144 +285,109 @@ style quick_button:
 style quick_button_text:
     properties gui.button_text_properties("quick_button")
 
-
 ################################################################################
-## Экраны Главного и Игрового меню
+## Main and Game Menu Screens
 ################################################################################
 
-## Экран навигации #############################################################
+## Navigation screen ###########################################################
 ##
-## Этот экран включает в себя главное и игровое меню, и обеспечивает навигацию к
-## другим меню и к началу игры.
+## This screen is included in the main and game menus, and provides navigation
+## to other menus, and to start the game.
 
 screen navigation():
+    style_prefix "navigation"
 
-    vbox:
-        style_prefix "navigation"
+    hbox:
 
-        xpos gui.navigation_xpos
-        yalign 0.5
+        yalign 0.15
+        xalign 0.5
+        spacing 25
+        xoffset -25
 
-        spacing gui.navigation_spacing
+        textbutton _("Save") action ShowMenu("save")
+        textbutton _("Load") action ShowMenu("load")
+        textbutton _("Options") action ShowMenu("preferences")
+        textbutton _("History") action ShowMenu("history")
+        textbutton _("About") action ShowMenu("about")
+        textbutton _("Help") action ShowMenu("help")
+        textbutton _("Quit") action Show("confirmbutton")
 
-        if main_menu:
-
-            textbutton _("Начать") action Start()
-
-        else:
-
-            textbutton _("История") action ShowMenu("history")
-
-            textbutton _("Сохранить") action ShowMenu("save")
-
-        textbutton _("Загрузить") action ShowMenu("load")
-
-        textbutton _("Настройки") action ShowMenu("preferences")
-
-        if _in_replay:
-
-            textbutton _("Завершить повтор") action EndReplay(confirm=True)
-
-        elif not main_menu:
-
-            textbutton _("Главное меню") action MainMenu()
-
-        textbutton _("Об игре") action ShowMenu("about")
-
-        if renpy.variant("pc") or (renpy.variant("web") and not renpy.variant("mobile")):
-
-            ## Помощь не необходима и не относится к мобильным устройствам.
-            textbutton _("Помощь") action ShowMenu("help")
-
-        if renpy.variant("pc"):
-
-            ## Кнопка выхода блокирована в iOS и не нужна на Android и в веб-
-            ## версии.
-            textbutton _("Выход") action Quit(confirm=not main_menu)
+    textbutton _("Return") action Return() xalign 0.95 yalign 0.93
 
 
-style navigation_button is gui_button
-style navigation_button_text is gui_button_text
-
-style navigation_button:
-    size_group "navigation"
-    properties gui.button_properties("navigation_button")
-
+style navigation_button
 style navigation_button_text:
-    properties gui.button_text_properties("navigation_button")
+    size 60
+    hover_color u"#715e46"
+    selected_idle_color u"#715e46"
+    idle_color u"#3d3d3d"
+
+style navigation_button
+
+style navigation_button_text
 
 
-## Экран главного меню #########################################################
+
+## Main Menu screen ############################################################
 ##
-## Используется, чтобы показать главное меню после запуска игры.
+## Used to display the main menu when Ren'Py starts.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#main-menu
 
 screen main_menu():
 
-    ## Этот тег гарантирует, что любой другой экран с тем же тегом будет
-    ## заменять этот.
+    ## This ensures that any other menu screen is replaced.
     tag menu
+    style_prefix "main_menu"
 
     add gui.main_menu_background
 
-    ## Эта пустая рамка затеняет главное меню.
     frame:
         style "main_menu_frame"
+    vbox:
+        xpos 280
+        ypos 330
+        textbutton _("Start") action Start() at button1
+        textbutton _("Load") action ShowMenu("load") at button2
+        textbutton _("Options") action ShowMenu("preferences")at button3
+        textbutton _("Help") action ShowMenu("help") at button4
+        textbutton _("About") action ShowMenu("about") at button5
+        textbutton _("Quit") action Quit(confirm=not main_menu) at button6
 
-    ## Оператор use включает отображение другого экрана в данном. Актуальное
-    ## содержание главного меню находится на экране навигации.
-    use navigation
+    add "gui/overlay/main_menu_logo.png"
 
-    if gui.show_name:
+    text "[config.name!t]" size 60 xpos 501 ypos 225 xanchor 0.5 yanchor 0.5 color u"#766249"
 
-        vbox:
-            style "main_menu_vbox"
 
-            text "[config.name!t]":
-                style "main_menu_title"
-
-            text "[config.version]":
-                style "main_menu_version"
 
 
 style main_menu_frame is empty
 style main_menu_vbox is vbox
-style main_menu_text is gui_text
+style main_menu_text
 style main_menu_title is main_menu_text
 style main_menu_version is main_menu_text
+style main_menu_button_text:
+    size 70
+    idle_color u"#4e4e4e"
+    hover_color u"#766249"
+style main_menu_button:
+    spacing -20
+    bottom_margin -28
 
 style main_menu_frame:
-    xsize 420
-    yfill True
-
     background "gui/overlay/main_menu.png"
 
-style main_menu_vbox:
-    xalign 1.0
-    xoffset -30
-    xmaximum 1200
-    yalign 1.0
-    yoffset -30
-
-style main_menu_text:
-    properties gui.text_properties("main_menu", accent=True)
-
-style main_menu_title:
-    properties gui.text_properties("title")
-
-style main_menu_version:
-    properties gui.text_properties("version")
+style main_menu_vbox
 
 
-## Экран игрового меню #########################################################
+## Game Menu screen ############################################################
 ##
-## Всё это показывает основную, обобщённую структуру экрана игрового меню. Он
-## вызывается с экраном заголовка и показывает фон, заголовок и навигацию.
+## This lays out the basic common structure of a game menu screen. It's called
+## with the screen title, and displays the background, title, and navigation.
 ##
-## Параметр scroll может быть None или один из "viewport" или "vpgrid". Этот
-## экран предназначен для использования с одним или несколькими дочерними
-## элементами, которые трансклюдируются (помещаются) внутрь него.
+## The scroll parameter can be None, or one of "viewport" or "vpgrid". When
+## this screen is intended to be used with one or more children, which are
+## transcluded (placed) inside it.
 
 screen game_menu(title, scroll=None, yinitial=0.0):
 
@@ -428,7 +403,7 @@ screen game_menu(title, scroll=None, yinitial=0.0):
 
         hbox:
 
-            ## Резервирует пространство для навигации.
+            ## Reserve space for the navigation section.
             frame:
                 style "game_menu_navigation_frame"
 
@@ -438,6 +413,8 @@ screen game_menu(title, scroll=None, yinitial=0.0):
                 if scroll == "viewport":
 
                     viewport:
+                        xoffset -250
+                        yoffset 100
                         yinitial yinitial
                         scrollbars "vertical"
                         mousewheel True
@@ -469,17 +446,6 @@ screen game_menu(title, scroll=None, yinitial=0.0):
                     transclude
 
     use navigation
-
-    textbutton _("Вернуться"):
-        style "return_button"
-
-        action Return()
-
-    label title
-
-    if main_menu:
-        key "game_menu" action ShowMenu("main_menu")
-
 
 style game_menu_outer_frame is empty
 style game_menu_navigation_frame is empty
@@ -533,91 +499,100 @@ style return_button:
     yoffset -45
 
 
-## Экран Об игре ###############################################################
+## About screen ################################################################
 ##
-## Этот экран показывает авторскую информацию об игре и Ren'Py.
+## This screen gives credit and copyright information about the game and Ren'Py.
 ##
-## В этом экране нет ничего особенного, и он служит только примером того, каким
-## можно сделать свой экран.
+## There's nothing special about this screen, and hence it also serves as an
+## example of how to make a custom screen.
 
 screen about():
 
     tag menu
 
-    ## Этот оператор включает игровое меню внутрь этого экрана. Дочерний vbox
-    ## включён в порт просмотра внутри экрана игрового меню.
-    use game_menu(_("Об игре"), scroll="viewport"):
+    ## This use statement includes the game_menu screen inside this one. The
+    ## vbox child is then included inside the viewport inside the game_menu
+    ## screen.
+    use game_menu(_("About"), scroll="viewport"):
 
         style_prefix "about"
 
         vbox:
 
             label "[config.name!t]"
-            text _("Версия [config.version!t]\n")
+            text _("Version [config.version!t]\n")
 
-            ## gui.about обычно установлено в options.rpy.
+            ## gui.about is usually set in options.rpy.
             if gui.about:
                 text "[gui.about!t]\n"
 
-            text _("Сделано с помощью {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]")
+            text _("Made with {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]")
 
 
 style about_label is gui_label
-style about_label_text is gui_label_text
-style about_text is gui_text
+style about_label_text
+style about_text:
+    text_align 0.5
 
 style about_label_text:
     size gui.label_text_size
 
 
-## Экраны загрузки и сохранения ################################################
+## Load and Save screens #######################################################
 ##
-## Эти экраны ответственны за возможность сохранять и загружать игру. Так
-## как они почти одинаковые, оба реализованы по правилам третьего экрана —
-## file_slots.
+## These screens are responsible for letting the player save the game and load
+## it again. Since they share nearly everything in common, both are implemented
+## in terms of a third screen, file_slots.
 ##
-## https://www.renpy.org/doc/html/screen_special.html#save 
+## https://www.renpy.org/doc/html/screen_special.html#save https://
+## www.renpy.org/doc/html/screen_special.html#load
 
 screen save():
 
     tag menu
 
-    use file_slots(_("Сохранить"))
+    use file_slots(_("Save"))
+
+    add "gui/overlay/save_overlay.png"
 
 
 screen load():
 
     tag menu
 
-    use file_slots(_("Загрузить"))
+    use file_slots(_("Load"))
+
+    add "gui/overlay/save_overlay.png"
 
 
 screen file_slots(title):
 
-    default page_name_value = FilePageNameInputValue(pattern=_("{} страница"), auto=_("Автосохранения"), quick=_("Быстрые сохранения"))
+    default page_name_value = FilePageNameInputValue(pattern=_("Page {}"), auto=_("Automatic saves"), quick=_("Quick saves"))
 
     use game_menu(title):
 
         fixed:
+            xpos -250
 
-            ## Это гарантирует, что ввод будет принимать enter перед остальными
-            ## кнопками.
+            ## This ensures the input will get the enter event before any of the
+            ## buttons do.
             order_reverse True
 
-            ## Номер страницы, который может быть изменён посредством клика на
-            ## кнопку.
+            ## The page name, which can be edited by clicking on a button.
             button:
                 style "page_label"
 
                 key_events True
                 xalign 0.5
+                yalign 1.0
+                yoffset -50
                 action page_name_value.Toggle()
 
                 input:
                     style "page_label_text"
                     value page_name_value
 
-            ## Таблица слотов.
+            ## The grid of file slots.
             grid gui.file_slot_cols gui.file_slot_rows:
                 style_prefix "slot"
 
@@ -637,55 +612,26 @@ screen file_slots(title):
 
                         add FileScreenshot(slot) xalign 0.5
 
-                        text FileTime(slot, format=_("{#file_time}%A, %d %B %Y, %H:%M"), empty=_("Пустой слот")):
+                        text FileTime(slot, format=_("{#file_time}%A, %B %d %Y, %H:%M"), empty=_("empty slot")):
                             style "slot_time_text"
-
+                            yoffset 20
                         text FileSaveName(slot):
                             style "slot_name_text"
 
                         key "save_delete" action FileDelete(slot)
 
-            ## Кнопки для доступа к другим страницам.
-            vbox:
-                style_prefix "page"
 
-                xalign 0.5
-                yalign 1.0
 
-                hbox:
-                    xalign 0.5
+            ## Buttons to access other pages.
 
-                    spacing gui.page_spacing
-
-                    textbutton _("<") action FilePagePrevious()
-
-                    if config.has_autosave:
-                        textbutton _("{#auto_page}А") action FilePage("auto")
-
-                    if config.has_quicksave:
-                        textbutton _("{#quick_page}Б") action FilePage("quick")
-
-                    ## range(1, 10) задаёт диапазон значений от 1 до 9.
-                    for page in range(1, 10):
-                        textbutton "[page]" action FilePage(page)
-
-                    textbutton _(">") action FilePageNext()
-
-                if config.has_sync:
-                    if CurrentScreenName() == "save":
-                        textbutton _("Синхронизация загрузки"):
-                            action UploadSync()
-                            xalign 0.5
-                    else:
-                        textbutton _("Скачать Sync"):
-                            action DownloadSync()
-                            xalign 0.5
-
+    imagebutton auto "gui/button/page_button_left_%s.png" yalign 0.5 xoffset 100 yoffset 50 action FilePagePrevious() at page_button_left
+    imagebutton auto "gui/button/page_button_right_%s.png" yalign 0.5 xalign 1.0 xoffset -100 yoffset 50 action FilePageNext() at page_button_right
 
 style page_label is gui_label
 style page_label_text is gui_label_text
 style page_button is gui_button
-style page_button_text is gui_button_text
+style page_button_text:
+    color u"#2b2b2b"
 
 style slot_button is gui_button
 style slot_button_text is gui_button_text
@@ -697,7 +643,7 @@ style page_label:
     ypadding 5
 
 style page_label_text:
-    textalign 0.5
+    text_align 0.5
     layout "subtitle"
     hover_color gui.hover_color
 
@@ -709,96 +655,92 @@ style page_button_text:
 
 style slot_button:
     properties gui.button_properties("slot_button")
+    yoffset 15
 
 style slot_button_text:
     properties gui.button_text_properties("slot_button")
 
 
-## Экран настроек ##############################################################
+## Preferences screen ##########################################################
 ##
-## Экран настроек позволяет игроку настраивать игру под себя.
+## The preferences screen allows the player to configure the game to better suit
+## themselves.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#preferences
 
 screen preferences():
 
     tag menu
-
-    use game_menu(_("Настройки"), scroll="viewport"):
-
-        vbox:
-
-            hbox:
-                box_wrap True
-
-                if renpy.variant("pc") or renpy.variant("web"):
-
-                    vbox:
-                        style_prefix "radio"
-                        label _("Режим экрана")
-                        textbutton _("Оконный") action Preference("display", "window")
-                        textbutton _("Полный") action Preference("display", "fullscreen")
-
-                vbox:
-                    style_prefix "check"
-                    label _("Пропуск")
-                    textbutton _("Всего текста") action Preference("skip", "toggle")
-                    textbutton _("После выборов") action Preference("after choices", "toggle")
-                    textbutton _("Переходов") action InvertSelected(Preference("transitions", "toggle"))
-
-                ## Дополнительные vbox'ы типа "radio_pref" или "check_pref"
-                ## могут быть добавлены сюда для добавления новых настроек.
-
-            null height (4 * gui.pref_spacing)
-
-            hbox:
-                style_prefix "slider"
-                box_wrap True
-
-                vbox:
-
-                    label _("Скорость текста")
-
-                    bar value Preference("text speed")
-
-                    label _("Скорость авточтения")
-
-                    bar value Preference("auto-forward time")
-
-                vbox:
-
-                    if config.has_music:
-                        label _("Громкость музыки")
-
-                        hbox:
-                            bar value Preference("music volume")
-
-                    if config.has_sound:
-
-                        label _("Громкость звуков")
-
-                        hbox:
-                            bar value Preference("sound volume")
-
-                            if config.sample_sound:
-                                textbutton _("Тест") action Play("sound", config.sample_sound)
+    style_prefix "pref"
+    if main_menu:
+        add gui.main_menu_background
+    add "gui/overlay/game_menu.png"
+    use navigation
+    imagemap:
+        ground 'gui/overlay/pref_overlay_ground.png'
+        idle 'gui/overlay/pref_overlay_ground.png'
+        hover 'gui/overlay/pref_overlay_ground.png'
+        selected_idle 'gui/overlay/pref_overlay_hover.png'
+        selected_hover 'gui/overlay/pref_overlay_hover.png'
+        cache False
 
 
-                    if config.has_voice:
-                        label _("Громкость голоса")
+        ##BARS
 
-                        hbox:
-                            bar value Preference("voice volume")
+        hotbar (264, 452, 499, 42) value Preference('music volume')
+        hotbar (264, 563, 499, 42) value Preference('sound volume')
+        hotbar (264, 674, 499, 42) value Preference('text speed')
+        hotbar (264, 785, 499, 42) value Preference('auto-forward time')
 
-                            if config.sample_voice:
-                                textbutton _("Тест") action Play("voice", config.sample_voice)
+        ##BAR LABELS
+        text _("Music") xpos 264 ypos 411
+        text _("Sound") xpos 264 ypos 521
+        text _("Text speed") xpos 264 ypos 631
+        text _("Auto-forward") xpos 264 ypos 741
 
-                    if config.has_music or config.has_sound or config.has_voice:
-                        null height gui.pref_spacing
 
-                        textbutton _("Без звука"):
-                            action Preference("all mute", "toggle")
-                            style "mute_all_button"
+    imagemap:
+        idle 'gui/overlay/pref_overlay_ground.png'
+        hover 'gui/overlay/pref_overlay_hover.png'
+        cache False
+
+
+        ##Display button
+        hotspot (1087, 415, 584, 65) action If(preferences.fullscreen==False, Preference('display', 'fullscreen'), Preference('display', 'window'))
+        ##Display labels
+        if preferences.fullscreen == False:
+            label _("Window") xpos 1290 ypos 410
+        else:
+            label _("Fullscreen") xpos 1280 ypos 410
+
+        ##Rollback button
+        hotspot (1087, 548, 584, 65):
+            if preferences.desktop_rollback_side == "disable":
+                action Preference("rollback side", "left")
+            elif preferences.desktop_rollback_side == "left":
+                action Preference("rollback side", "right")
+            else:
+                action Preference("rollback side", "disable")
+
+        ##Rollback labels
+        if preferences.desktop_rollback_side == "disable":
+            label _("Disabled") xpos 1290 ypos 542
+        elif preferences.desktop_rollback_side == "left":
+            label _("Left") xpos 1345 ypos 542
+        else:
+            label _("Right") xpos 1330 ypos 542
+
+        text _("Display") xpos 1087 ypos 375
+        text _("Rollback") xpos 1087 ypos 508
+
+    vbox:
+        xsize 500
+        xpos 1170
+        ypos 650
+        style_prefix "check"
+        textbutton _("Skip Unseen Text") action Preference("skip", "toggle") xalign 1.0
+        textbutton _("Skip After Choices") action Preference("after choices", "toggle") xalign 1.0
+        textbutton _("Skip Transitions") action InvertSelected(Preference("transitions", "toggle")) xalign 1.0
 
 
 style pref_label is gui_label
@@ -813,9 +755,14 @@ style radio_vbox is pref_vbox
 
 style check_label is pref_label
 style check_label_text is pref_label_text
-style check_button is gui_button
-style check_button_text is gui_button_text
-style check_vbox is pref_vbox
+style check_button
+style check_button_text:
+    size 40
+    idle_color u"#4e4c49"
+    hover_color u"#6d5d4a"
+    selected_hover_color u"#977956"
+    selected_idle_color u"#6d5d4a"
+style check_vbox
 
 style slider_label is pref_label
 style slider_label_text is pref_label_text
@@ -827,12 +774,14 @@ style slider_pref_vbox is pref_vbox
 style mute_all_button is check_button
 style mute_all_button_text is check_button_text
 
-style pref_label:
-    top_margin gui.pref_spacing
-    bottom_margin 3
+style pref_label
 
 style pref_label_text:
-    yalign 1.0
+    yalign 0.5
+    size 50
+    color u"#2a2928"
+style pref_text:
+    color u"#4e4c49"
 
 style pref_vbox:
     xsize 338
@@ -872,62 +821,66 @@ style slider_vbox:
     xsize 675
 
 
-## Экран истории ###############################################################
+## History screen ##############################################################
 ##
-## Этот экран показывает игроку историю диалогов. Хотя в этом экране нет ничего
-## особенного, он имеет доступ к истории диалогов, хранимом в _history_list.
+## This is a screen that displays the dialogue history to the player. While
+## there isn't anything special about this screen, it does have to access the
+## dialogue history stored in _history_list.
 ##
 ## https://www.renpy.org/doc/html/history.html
 
 screen history():
 
     tag menu
+    if main_menu:
+        add gui.main_menu_background
+    add "gui/overlay/game_menu.png"
+    use navigation
 
-    ## Избегайте предсказывания этого экрана, так как он может быть очень
-    ## массивным.
+    ## Avoid predicting this screen, as it can be very large.
     predict False
 
-    use game_menu(_("История"), scroll=("vpgrid" if gui.history_height else "viewport"), yinitial=1.0):
+    vbox:
+        xalign 0.5
+        ypos 350
+        viewport id "vpgrid":
+            yinitial 1.0
+            draggable True
+            scrollbars "vertical"
+            mousewheel True
+            xmaximum 1000
+            ymaximum 600
+            yfill True
+            vbox:
+                xsize 960
 
-        style_prefix "history"
+                for h in _history_list:
 
-        for h in _history_list:
-
-            window:
-
-                ## Это всё правильно уравняет, если history_height будет
-                ## установлен на None.
-                has fixed:
-                    yfit True
-
-                if h.who:
-
-                    label h.who:
-                        style "history_name"
+                    $ what = renpy.filter_text_tags(h.what, allow=gui.history_allow_tags)
+                    text what:
                         substitute False
 
-                        ## Берёт цвет из who параметра персонажа, если он
-                        ## установлен.
-                        if "color" in h.who_args:
-                            text_color h.who_args["color"]
+                    if h.who:
+                        text "— " + h.who xalign 1.0 text_align 1.0
+                    add "gui/divider.png" xalign 0.5 xoffset 20
 
-                $ what = renpy.filter_text_tags(h.what, allow=gui.history_allow_tags)
-                text what:
-                    substitute False
+                if not _history_list:
+                    label _("The dialogue history is empty.") xalign 0.5
+    add "gui/overlay/history_overlay.png"
 
-        if not _history_list:
-            label _("История диалогов пуста.")
+## This determines what tags are allowed to be displayed on the history screen.
 
+define gui.history_allow_tags = { "alt", "noalt" }
 
-## Это определяет, какие теги могут отображаться на экране истории.
-
-define gui.history_allow_tags = { "alt", "noalt", "rt", "rb", "art" }
-
+style history_vscrollbar:
+    unscrollable gui.unscrollable
 
 style history_window is empty
 
 style history_name is gui_label
 style history_name_text is gui_label_text
+style history_text is gui_text
+
 style history_text is gui_text
 
 style history_label is gui_label
@@ -945,7 +898,7 @@ style history_name:
 
 style history_name_text:
     min_width gui.history_name_width
-    textalign gui.history_name_xalign
+    text_align gui.history_name_xalign
 
 style history_text:
     xpos gui.history_text_xpos
@@ -953,7 +906,7 @@ style history_text:
     xanchor gui.history_text_xalign
     xsize gui.history_text_width
     min_width gui.history_text_width
-    textalign gui.history_text_xalign
+    text_align gui.history_text_xalign
     layout ("subtitle" if gui.history_text_xalign else "tex")
 
 style history_label:
@@ -963,143 +916,107 @@ style history_label_text:
     xalign 0.5
 
 
-## Экран помощи ################################################################
+## Help screen #################################################################
 ##
-## Экран, дающий информацию о клавишах управления. Он использует другие экраны
-## (keyboard_help, mouse_help, и gamepad_help), чтобы показывать актуальную
-## помощь.
+## A screen that gives information about key and mouse bindings. It uses other
+## screens (keyboard_help, mouse_help, and gamepad_help) to display the actual
+## help.
 
 screen help():
 
     tag menu
+    style_prefix "help"
+    if main_menu:
+        add gui.main_menu_background
+    add "gui/overlay/game_menu.png"
+    use navigation
 
-    default device = "keyboard"
+    add "gui/overlay/help_overlay.png"
 
-    use game_menu(_("Помощь"), scroll="viewport"):
+    viewport:
+        xpos 228
+        ypos 415
+        xsize 579
+        ysize 448
 
-        style_prefix "help"
-
+        scrollbars "vertical"
+        draggable True
+        mousewheel True
         vbox:
-            spacing 23
+            vbox:
+                label _("Enter")
+                text _("Advances dialogue and activates the interface.")
 
-            hbox:
+            vbox:
+                label _("Space")
+                text _("Advances dialogue without selecting choices.")
 
-                textbutton _("Клавиатура") action SetScreenVariable("device", "keyboard")
-                textbutton _("Мышь") action SetScreenVariable("device", "mouse")
+            vbox:
+                label _("Arrow Keys")
+                text _("Navigate the interface.")
 
-                if GamepadExists():
-                    textbutton _("Геймпад") action SetScreenVariable("device", "gamepad")
+            vbox:
+                label _("Escape")
+                text _("Accesses the game menu.")
 
-            if device == "keyboard":
-                use keyboard_help
-            elif device == "mouse":
-                use mouse_help
-            elif device == "gamepad":
-                use gamepad_help
+            vbox:
+                label _("Ctrl")
+                text _("Skips dialogue while held down.")
 
+            vbox:
+                label _("Tab")
+                text _("Toggles dialogue skipping.")
 
-screen keyboard_help():
+            vbox:
+                label _("Page Up")
+                text _("Rolls back to earlier dialogue.")
 
-    hbox:
-        label _("Войти")
-        text _("Прохождение диалогов, активация интерфейса.")
+            vbox:
+                label _("Page Down")
+                text _("Rolls forward to later dialogue.")
 
-    hbox:
-        label _("Пробел")
-        text _("Прохождение диалогов без возможности делать выбор.")
+            vbox:
+                label "H"
+                text _("Hides the user interface.")
 
-    hbox:
-        label _("Стрелки")
-        text _("Навигация по интерфейсу.")
+            vbox:
+                label "S"
+                text _("Takes a screenshot.")
 
-    hbox:
-        label _("Esc")
-        text _("Вход в игровое меню.")
+            vbox:
+                label "V"
+                text _("Toggles assistive {a=https://www.renpy.org/l/voicing}self-voicing{/a}.")
 
-    hbox:
-        label _("Ctrl")
-        text _("Пропускает диалоги, пока зажат.")
+    viewport:
+        xpos 1121
+        ypos 415
+        xsize 579
+        ysize 448
 
-    hbox:
-        label _("Tab")
-        text _("Включает режим пропуска.")
+        scrollbars "vertical"
+        draggable True
+        mousewheel True
+        vbox:
+            vbox:
+                label _("Left Click")
+                text _("Advances dialogue and activates the interface.")
 
-    hbox:
-        label _("Страница вверху")
-        text _("Откат назад по сюжету игры.")
+            vbox:
+                label _("Middle Click")
+                text _("Hides the user interface.")
 
-    hbox:
-        label _("Страница вниз")
-        text _("Откатывает предыдущее действие вперёд.")
+            vbox:
+                label _("Right Click")
+                text _("Accesses the game menu.")
 
-    hbox:
-        label "H"
-        text _("Скрывает интерфейс пользователя.")
+            vbox:
+                label _("Mouse Wheel Up/Click Rollback Side")
+                text _("Rolls back to earlier dialogue.")
 
-    hbox:
-        label "S"
-        text _("Делает снимок экрана.")
+            vbox:
+                label _("Mouse Wheel Down")
+                text _("Rolls forward to later dialogue.")
 
-    hbox:
-        label "V"
-        text _("Включает поддерживаемый {a=https://www.renpy.org/l/voicing}синтезатор речи{/a}.")
-
-    hbox:
-        label "Shift+A"
-        text _("Открывает меню специальных возможностей.")
-
-
-screen mouse_help():
-
-    hbox:
-        label _("Левый клик")
-        text _("Прохождение диалогов, активация интерфейса.")
-
-    hbox:
-        label _("Клик колёсиком")
-        text _("Скрывает интерфейс пользователя.")
-
-    hbox:
-        label _("Правый клик")
-        text _("Вход в игровое меню.")
-
-    hbox:
-        label _("Колёсико вверх\nКлик на сторону отката")
-        text _("Откат назад по сюжету игры.")
-
-    hbox:
-        label _("Колёсико вниз")
-        text _("Откатывает предыдущее действие вперёд.")
-
-
-screen gamepad_help():
-
-    hbox:
-        label _("Правый триггер\nA/Нижняя кнопка")
-        text _("Прохождение диалогов, активация интерфейса.")
-
-    hbox:
-        label _("Левый Триггер\nЛевый Бампер")
-        text _("Откат назад по сюжету игры.")
-
-    hbox:
-        label _("Правый бампер")
-        text _("Откатывает предыдущее действие вперёд.")
-
-
-    hbox:
-        label _("Крестовина, Стики")
-        text _("Навигация по интерфейсу.")
-
-    hbox:
-        label _("Начало, Руководство")
-        text _("Вход в игровое меню.")
-
-    hbox:
-        label _("Y/Верхняя кнопка")
-        text _("Скрывает интерфейс пользователя.")
-
-    textbutton _("Калибровка") action GamepadCalibrate()
 
 
 style help_button is gui_button
@@ -1107,6 +1024,8 @@ style help_button_text is gui_button_text
 style help_label is gui_label
 style help_label_text is gui_label_text
 style help_text is gui_text
+style help_hbox:
+    spacing 30
 
 style help_button:
     properties gui.button_properties("help_button")
@@ -1115,32 +1034,28 @@ style help_button:
 style help_button_text:
     properties gui.button_text_properties("help_button")
 
-style help_label:
-    xsize 375
-    right_padding 30
+style help_label
 
 style help_label_text:
     size gui.text_size
-    xalign 1.0
-    textalign 1.0
 
 
 
 ################################################################################
-## Дополнительные экраны
+## Additional screens
 ################################################################################
 
 
-## Экран подтверждения #########################################################
+## Confirm screen ##############################################################
 ##
-## Экран подтверждения вызывается, когда Ren'Py хочет спросить у игрока вопрос
-## Да или Нет.
+## The confirm screen is called when Ren'Py wants to ask the player a yes or no
+## question.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#confirm
 
 screen confirm(message, yes_action, no_action):
 
-    ## Гарантирует, что другие экраны будут недоступны, пока показан этот экран.
+    ## Ensure other screens do not get input while this screen is displayed.
     modal True
 
     zorder 200
@@ -1164,10 +1079,10 @@ screen confirm(message, yes_action, no_action):
                 xalign 0.5
                 spacing 150
 
-                textbutton _("Да") action yes_action
-                textbutton _("Нет") action no_action
+                textbutton _("Yes") action yes_action
+                textbutton _("No") action no_action
 
-    ## Правый клик и esc, как ответ "Нет".
+    ## Right-click and escape answer "no".
     key "game_menu" action no_action
 
 
@@ -1184,7 +1099,7 @@ style confirm_frame:
     yalign .5
 
 style confirm_prompt_text:
-    textalign 0.5
+    text_align 0.5
     layout "subtitle"
 
 style confirm_button:
@@ -1193,11 +1108,43 @@ style confirm_button:
 style confirm_button_text:
     properties gui.button_text_properties("confirm_button")
 
+##IN-game quit button
 
-## Экран индикатора пропуска ###################################################
+screen confirmbutton():
+
+    ## Ensure other screens do not get input while this screen is displayed.
+    modal True
+
+    zorder 200
+
+    style_prefix "confirm"
+
+    add "gui/overlay/confirm.png"
+
+    frame:
+
+        vbox:
+            xalign .5
+            yalign .5
+            spacing 45
+
+            label _("Are you sure you want to quit?"):
+                style "confirm_prompt"
+                xalign 0.5
+
+            hbox:
+                xalign 0.5
+                spacing 100
+
+                textbutton _("Quit game") action Quit(confirm=False)
+                textbutton _("Quit to main menu") action MainMenu(confirm=False)
+                textbutton _("No          ") action Null
+
+
+## Skip indicator screen #######################################################
 ##
-## Экран индикатора пропуска появляется для того, чтобы показать, что идёт
-## пропуск.
+## The skip_indicator screen is displayed to indicate that skipping is in
+## progress.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#skip-indicator
 
@@ -1211,14 +1158,14 @@ screen skip_indicator():
         hbox:
             spacing 9
 
-            text _("Пропускаю")
+            text _("Skipping")
 
             text "▸" at delayed_blink(0.0, 1.0) style "skip_triangle"
             text "▸" at delayed_blink(0.2, 1.0) style "skip_triangle"
             text "▸" at delayed_blink(0.4, 1.0) style "skip_triangle"
 
 
-## Эта трансформация используется, чтобы мигать стрелками одна за другой.
+## This transform is used to blink the arrows one after another.
 transform delayed_blink(delay, cycle):
     alpha .5
 
@@ -1245,14 +1192,15 @@ style skip_text:
     size gui.notify_text_size
 
 style skip_triangle:
-    ## Нам надо использовать шрифт, имеющий в себе символ U+25B8 (стрелку выше).
+    ## We have to use a font that has the BLACK RIGHT-POINTING SMALL TRIANGLE
+    ## glyph in it.
     font "DejaVuSans.ttf"
 
 
-## Экран уведомлений ###########################################################
+## Notify screen ###############################################################
 ##
-## Экран уведомлений используется, чтобы показать игроку оповещение. (Например,
-## когда игра автосохранилась, или был сделан скриншот)
+## The notify screen is used to show the player a message. (For example, when
+## the game is quicksaved or a screenshot has been taken.)
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#notify-screen
 
@@ -1282,15 +1230,15 @@ style notify_frame:
     ypos gui.notify_ypos
 
     background Frame("gui/notify.png", gui.notify_frame_borders, tile=gui.frame_tile)
-    padding gui.notify_frame_borders.padding
+    #padding gui.notify_frame_borders.padding
 
 style notify_text:
     properties gui.text_properties("notify")
 
 
-## Экран NVL ###################################################################
+## NVL screen ##################################################################
 ##
-## Этот экран используется в диалогах и меню режима NVL.
+## This screen is used for NVL-mode dialogue and menus.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#nvl
 
@@ -1303,7 +1251,7 @@ screen nvl(dialogue, items=None):
         has vbox:
             spacing gui.nvl_spacing
 
-        ## Показывает диалог или в vpgrid, или в vbox.
+        ## Displays dialogue in either a vpgrid or the vbox.
         if gui.nvl_height:
 
             vpgrid:
@@ -1316,8 +1264,8 @@ screen nvl(dialogue, items=None):
 
             use nvl_dialogue(dialogue)
 
-        ## Показывает меню, если есть. Меню может показываться некорректно, если
-        ## config.narrator_menu установлено на True.
+        ## Displays the menu, if given. The menu may be displayed incorrectly if
+        ## config.narrator_menu is set to True, as it is above.
         for i in items:
 
             textbutton i.caption:
@@ -1346,7 +1294,8 @@ screen nvl_dialogue(dialogue):
                     id d.what_id
 
 
-## Это контролирует максимальное число строк NVL, могущих показываться за раз.
+## This controls the maximum number of NVL-mode entries that can be displayed at
+## once.
 define config.nvl_list_length = gui.nvl_list_length
 
 style nvl_window is default
@@ -1376,7 +1325,7 @@ style nvl_label:
     yanchor 0.0
     xsize gui.nvl_name_width
     min_width gui.nvl_name_width
-    textalign gui.nvl_name_xalign
+    text_align gui.nvl_name_xalign
 
 style nvl_dialogue:
     xpos gui.nvl_text_xpos
@@ -1384,7 +1333,7 @@ style nvl_dialogue:
     ypos gui.nvl_text_ypos
     xsize gui.nvl_text_width
     min_width gui.nvl_text_width
-    textalign gui.nvl_text_xalign
+    text_align gui.nvl_text_xalign
     layout ("subtitle" if gui.nvl_text_xalign else "tex")
 
 style nvl_thought:
@@ -1393,7 +1342,7 @@ style nvl_thought:
     ypos gui.nvl_thought_ypos
     xsize gui.nvl_thought_width
     min_width gui.nvl_thought_width
-    textalign gui.nvl_thought_xalign
+    text_align gui.nvl_thought_xalign
     layout ("subtitle" if gui.nvl_text_xalign else "tex")
 
 style nvl_button:
@@ -1405,107 +1354,17 @@ style nvl_button_text:
     properties gui.button_text_properties("nvl_button")
 
 
-## Пузырьковый экран ###########################################################
-##
-## Экран пузырьков используется для отображения диалога игроку при использовании
-## речевых пузырьков. Экран пузырьков принимает те же параметры, что и экран
-## say, должен создать отображаемый объект с id "what", и может создавать
-## отображаемые объекты с id "namebox", "who" и "window".
-##
-## https://www.renpy.org/doc/html/bubble.html#bubble-screen
-
-screen bubble(who, what):
-    style_prefix "bubble"
-
-    window:
-        id "window"
-
-        if who is not None:
-
-            window:
-                id "namebox"
-                style "bubble_namebox"
-
-                text who:
-                    id "who"
-
-        text what:
-            id "what"
-
-style bubble_window is empty
-style bubble_namebox is empty
-style bubble_who is default
-style bubble_what is default
-
-style bubble_window:
-    xpadding 30
-    top_padding 5
-    bottom_padding 5
-
-style bubble_namebox:
-    xalign 0.5
-
-style bubble_who:
-    xalign 0.5
-    textalign 0.5
-    color "#000"
-
-style bubble_what:
-    align (0.5, 0.5)
-    text_align 0.5
-    layout "subtitle"
-    color "#000"
-
-define bubble.frame = Frame("gui/bubble.png", 55, 55, 55, 95)
-define bubble.thoughtframe = Frame("gui/thoughtbubble.png", 55, 55, 55, 55)
-
-define bubble.properties = {
-    "bottom_left" : {
-        "window_background" : Transform(bubble.frame, xzoom=1, yzoom=1),
-        "window_bottom_padding" : 27,
-    },
-
-    "bottom_right" : {
-        "window_background" : Transform(bubble.frame, xzoom=-1, yzoom=1),
-        "window_bottom_padding" : 27,
-    },
-
-    "top_left" : {
-        "window_background" : Transform(bubble.frame, xzoom=1, yzoom=-1),
-        "window_top_padding" : 27,
-    },
-
-    "top_right" : {
-        "window_background" : Transform(bubble.frame, xzoom=-1, yzoom=-1),
-        "window_top_padding" : 27,
-    },
-
-    "thought" : {
-        "window_background" : bubble.thoughtframe,
-    }
-}
-
-define bubble.expand_area = {
-    "bottom_left" : (0, 0, 0, 22),
-    "bottom_right" : (0, 0, 0, 22),
-    "top_left" : (0, 22, 0, 0),
-    "top_right" : (0, 22, 0, 0),
-    "thought" : (0, 0, 0, 0),
-}
-
-
 
 ################################################################################
-## Мобильные варианты
+## Mobile Variants
 ################################################################################
 
 style pref_vbox:
     variant "medium"
     xsize 675
 
-## Раз мышь может не использоваться, мы заменили быстрое меню версией,
-## использующей меньше кнопок, но больших по размеру, чтобы их было легче
-## касаться.
+## Since a mouse may not be present, we replace the quick menu with a version
+## that uses fewer and bigger buttons that are easier to touch.
 screen quick_menu():
     variant "touch"
 
@@ -1519,10 +1378,10 @@ screen quick_menu():
             xalign 0.5
             yalign 1.0
 
-            textbutton _("Назад") action Rollback()
-            textbutton _("Пропуск") action Skip() alternate Skip(fast=True, confirm=True)
-            textbutton _("Авто") action Preference("auto-forward", "toggle")
-            textbutton _("Меню") action ShowMenu()
+            textbutton _("Back") action Rollback()
+            textbutton _("Skip") action Skip() alternate Skip(fast=True, confirm=True)
+            textbutton _("Auto") action Preference("auto-forward", "toggle")
+            textbutton _("Menu") action ShowMenu()
 
 
 style window:
