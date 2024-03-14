@@ -23,7 +23,7 @@ define gui.show_name = True
 
 ## The version of the game.
 
-define config.version = "0.1.8"
+define config.version = "0.1.10"
 
 
 ## Text that is placed on the game's about screen. Place the text between the
@@ -195,7 +195,7 @@ init python:
     build.documentation('*.txt')
 
 
-## A Google Play license key is required to download expansion files and perform
+## A Google Play license key is requitred to download expansion files and perform
 ## in-app purchases. It can be found on the "Services & APIs" page of the Google
 ## Play developer console.
 

@@ -1122,7 +1122,7 @@ screen confirmbutton():
             yalign .5
             spacing 45
 
-            label _("Are you sure you want to quit?"):
+            label _("Вы уверены, что хотите выйти?"):
                 style "confirm_prompt"
                 xalign 0.5
 
@@ -1130,9 +1130,9 @@ screen confirmbutton():
                 xalign 0.5
                 spacing 100
 
-                textbutton _("Quit game") action Quit(confirm=False)
-                textbutton _("Quit to main menu") action MainMenu(confirm=False)
-                textbutton _("No          ") action Null
+                textbutton _("Выйти из игры") action Quit(confirm=False)
+                textbutton _("Выйти в главное меню") action MainMenu(confirm=False)
+                textbutton _("Нет          ") action Null
 
 
 ## Skip indicator screen #######################################################
